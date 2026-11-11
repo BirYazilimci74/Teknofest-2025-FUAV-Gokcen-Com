@@ -1,0 +1,73 @@
+var dbService;
+
+using var server = node.CreateService<
+    EmptyService,
+    EmptyServiceRequest,
+    EmptyServiceResponse>("/vec",
+        (request, state) =>
+        {
+            Team rt = dbService.GetTeamFromDatabase().GetAwaiter().GetResult();
+
+            return rt;
+        });
+await Task.Delay(-1);
+
+
+---
+
+
+public async Task<Team> GetTeamFromDatabase(int teamId) {
+
+    var rt = await _dbCtx.TeamTable.Where(x => x.teamId == teamId).Select(x => x...).FirstOrDefaultAsync();
+
+    return rt;
+
+}
+
+/*
+log koyulabilir: NLog
+async her şey try catchlenmeli
+DI olabilir
+
+
+Core/Domain: TeamModel, MessageModel vs vs
+API: EntityFramework (DBContext <-> DB) (DTO)
+ROS: ROS2
+Service: Business <-> Repository
+Repository: Service <-> DB Context
+
+
+
+Repository - Service - API - Core/Domain - ROS
+
+200ms : telemetry delay page
+x ms: uncontrolled delay
+
+
+TELEMETRI SEND ALGO (ALTERNATIF)
+
+1 cycle:
+while true
+DB'den son veriyi al
+telemetriye yolla
+200ms bekle
+
+TEAM LOCATION ALGO
+
+db'de iki tablo 
+team_pos_history
+team_current_pos
+
+init:
+db team_current_pos 40 tane takım aç (pozisyonları null)
+
+telemetry yollama metodunda:
+gelen takım pozisyon verilerini team_current_pos tablosunda takım idleri ile eşleştirip setle (add yapma)
+gelen takım pozisyon verilerini team_pos_history tablosuna yeni entry olarak ekle
+
+team_pos_request metodunda:
+db'den team idnin posunu al
+request'e returnle
+
+
+*/
